@@ -1,0 +1,61 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+
+local function removeEsp(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if head then
+        local old = head:FindFirstChild("NameESP")
+        if old then
+            old:Destroy()
+        end
+    end
+end
+
+local function createEsp(player)
+    if player == LocalPlayer then return end
+
+    local function apply(character)
+        local head = character:WaitForChild("Head", 10)
+        if not head then return end
+
+        removeEsp(character)
+
+        local gui = Instance.new("BillboardGui")
+        gui.Name = "NameESP"
+        gui.Adornee = head
+        gui.Size = UDim2.new(0, 120, 0, 24)
+        gui.StudsOffset = Vector3.new(0, 2.5, 0)
+        gui.AlwaysOnTop = true
+        gui.Parent = head
+
+        local label = Instance.new("TextLabel")
+        label.Size = UDim2.new(1, 0, 1, 0)
+        label.BackgroundTransparency = 1
+        label.Text = player.DisplayName
+        label.TextColor3 = Color3.fromRGB(255, 255, 255)
+        label.TextStrokeTransparency = 0
+        label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+        label.TextScaled = true
+        label.Font = Enum.Font.GothamBold
+        label.Parent = gui
+    end
+
+    if player.Character then
+        task.spawn(apply, player.Character)
+    end
+
+    player.CharacterAdded:Connect(apply)
+end
+
+for _, player in ipairs(Players:GetPlayers()) do
+    createEsp(player)
+end
+
+Players.PlayerAdded:Connect(createEsp)
+
+Players.PlayerRemoving:Connect(function(player)
+    removeEsp(player.Character)
+end)
